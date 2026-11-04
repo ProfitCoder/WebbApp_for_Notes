@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Web for notes</title>
     <link rel="StyleSheet" href="./src/css/style.css">
+    <link rel="icon" href="./src/img/images-removebg-preview.png">
 </head>
 <body>
     <header>
@@ -20,16 +21,63 @@
     </main>
     <footer>
         <p>&copy;2026 - ProfitCoder</p>
+        <button id="Add">+</button>
     </footer>
 
-    <script>
-        import { firebaseConfig } from './firebase_config.js';
+    <script type="module">
+        import { firebaseConfig } from '/src/script/firebase_config.js';
 
-        
+        let arrastrando = false;
+        let inicioX = 0;
+        let inicioY = 0;
+        let add = document.getElementById("Add");
+        let note = document.getElementById("Note");
+        let header = document.getElementById("arriba");
+        let body = document.getElementById("abajo");
 
+        note.addEventListener("mousedown", changePosition);
+        note.addEventListener("dblclick",editNote);
 
+        document.addEventListener("mousemove", changePosition);
+        document.addEventListener("mouseup", changePosition);
+        document.addEventListener("mousedown", terminarEdicion);
 
+        function terminarEdicion(e)
+        {
+            if (!note.contains(e.target))
+            {
+                header.contentEditable = "false";
+                body.contentEditable = "false";
+            }
+        }
 
+        function editNote()
+        {
+            header.contentEditable = "true";
+            body.contentEditable = "true";
+        }
+
+        function changePosition(e)
+        {
+            if (e.type === "mousedown" && header.contentEditable !== "true")
+            {
+                arrastrando = true;
+
+                inicioX = e.clientX - note.offsetLeft;
+                inicioY = e.clientY - note.offsetTop;
+
+                e.preventDefault();
+            }
+            else if (e.type === "mousemove" && arrastrando)
+            {
+                note.style.left = (e.clientX - inicioX) + "px";
+                note.style.top = (e.clientY - inicioY) + "px";
+            }
+            else if (e.type === "mouseup")
+            {
+                arrastrando = false;
+            }
+        }
     </script>
 </body>
 </html>
