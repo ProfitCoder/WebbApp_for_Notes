@@ -14,8 +14,8 @@
     <main>
         <section id="PostIt">
             <div id="Note">
-                <p id="arriba" style="background-color: rgb(255, 208, 0); width: 200px;">header</p>
-                <p id="abajo" style="background-color: yellow; width: 200px; height: 200px;">Content</p>
+                <p id="arriba" style="background-color: #FDE68A; width: 200px;">header</p>
+                <p id="abajo" style="background-color: #FEF3C7; width: 200px; height: 200px;">Content</p>
             </div>
         </section>
     </main>
@@ -25,11 +25,14 @@
     </footer>
 
     <script type="module">
-        import { firebaseConfig } from '/src/script/firebase_config.js';
+        import { firebaseConfig } from './src/script/firebase_config.js';
 
         let arrastrando = false;
         let inicioX = 0;
         let inicioY = 0;
+        let ultimaX = 0;
+        let ultimoTiempo = 0;
+        
         let add = document.getElementById("Add");
         let note = document.getElementById("Note");
         let header = document.getElementById("arriba");
@@ -41,6 +44,8 @@
         document.addEventListener("mousemove", changePosition);
         document.addEventListener("mouseup", changePosition);
         document.addEventListener("mousedown", terminarEdicion);
+        document.addEventListener("mousemove",deleteNote);
+
 
         function terminarEdicion(e)
         {
@@ -62,6 +67,8 @@
             if (e.type === "mousedown" && header.contentEditable !== "true")
             {
                 arrastrando = true;
+                ultimaX = e.clientX;
+                ultimoTiempo = performance.now();
 
                 inicioX = e.clientX - note.offsetLeft;
                 inicioY = e.clientY - note.offsetTop;
@@ -72,12 +79,34 @@
             {
                 note.style.left = (e.clientX - inicioX) + "px";
                 note.style.top = (e.clientY - inicioY) + "px";
+
+                deleteNote(e);
             }
             else if (e.type === "mouseup")
             {
                 arrastrando = false;
             }
         }
+
+        function deleteNote(e)
+        {
+            if (arrastrando)
+            {
+                let ahora = performance.now();
+                let tiempo = ahora - ultimoTiempo;
+                let distancia = Math.abs(e.clientX - ultimaX);
+
+                if (tiempo > 0 && distancia / tiempo > 3)
+                {
+                    arrastrando = false;
+                    note.remove();
+                }
+
+                ultimaX = e.clientX;
+                ultimoTiempo = ahora;
+            }
+        }
+
     </script>
 </body>
 </html>
