@@ -14,14 +14,14 @@ body
 
 header
 {
-    background-color: rgb(251, 255, 194);
+    background-color: #F8F9FA;
 
-    box-shadow: 2px 2px 2px black;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05)
 }
 
 header h1
 {
-    color: black;
+    color: #1F2937;
     text-align: center;
 
     padding: 20px;
@@ -42,7 +42,7 @@ footer
 
 #Add
 {
-    background-color: rgb(105, 105, 214);
+    background-color: #2563EB;
     color: white;
     font-size: 2em;
     width: 40px;
@@ -58,13 +58,13 @@ footer
 
 #Add:hover
 {
-    background-color: blueviolet;
+    background-color: rgb(9, 17, 255);
 }
 
 footer p
 {
     text-align: center;
-    color: black;
+    color: #6B7280;
 }
 
 #Note
@@ -83,8 +83,10 @@ button
     min-height: 400px;
 }
 
-.Note
+#Note
 {
+    margin-left: 10px;
+    margin-top: 10px;
     position: absolute;
     width: 200px;
     box-shadow: 3px 3px 6px #0004;
