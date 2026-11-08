@@ -1,3 +1,8 @@
+<!--
+-   Author: ProfitCoder
+-   Date: 08/11/2026
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,108 +11,37 @@
     <title>Web for notes</title>
     <link rel="StyleSheet" href="./src/css/style.css">
     <link rel="icon" href="./src/img/images-removebg-preview.png">
+    <script type="module" src="./src/script/main.js"></script>  
 </head>
 <body>
+
+    <!-- Cabecera -->
+
     <header>
         <h1>Webs For Notes</h1>
     </header>
+
+    <!-- Contenido Principal -->
+
     <main>
-        <section id="PostIt">
-            <div id="Note">
-                <p id="arriba" style="background-color: #FDE68A; width: 200px;">header</p>
-                <p id="abajo" style="background-color: #FEF3C7; width: 200px; height: 200px;">Content</p>
-            </div>
-        </section>
+        <section id="PostIt"></section>
+
+        <dialog id="confirmarBorrado">
+            <p>¿Quieres borrar esta nota?</p>
+
+            <form method="dialog">
+                <button value="cancelar" autofocus>Cancelar</button>
+                <button value="borrar">Borrar</button>
+            </form>
+        </dialog>
     </main>
+
+    <!-- Apartado del footer -->
+
     <footer>
         <p>&copy;2026 - ProfitCoder</p>
         <button id="Add">+</button>
     </footer>
-
-    <script type="module">
-        import { firebaseConfig } from './src/script/firebase_config.js';
-
-        let arrastrando = false;
-        let inicioX = 0;
-        let inicioY = 0;
-        let ultimaX = 0;
-        let ultimoTiempo = 0;
-        
-        let add = document.getElementById("Add");
-        let note = document.getElementById("Note");
-        let header = document.getElementById("arriba");
-        let body = document.getElementById("abajo");
-
-        note.addEventListener("mousedown", changePosition);
-        note.addEventListener("dblclick",editNote);
-
-        document.addEventListener("mousemove", changePosition);
-        document.addEventListener("mouseup", changePosition);
-        document.addEventListener("mousedown", terminarEdicion);
-        document.addEventListener("mousemove",deleteNote);
-
-
-        function terminarEdicion(e)
-        {
-            if (!note.contains(e.target))
-            {
-                header.contentEditable = "false";
-                body.contentEditable = "false";
-            }
-        }
-
-        function editNote()
-        {
-            header.contentEditable = "true";
-            body.contentEditable = "true";
-        }
-
-        function changePosition(e)
-        {
-            if (e.type === "mousedown" && header.contentEditable !== "true")
-            {
-                arrastrando = true;
-                ultimaX = e.clientX;
-                ultimoTiempo = performance.now();
-
-                inicioX = e.clientX - note.offsetLeft;
-                inicioY = e.clientY - note.offsetTop;
-
-                e.preventDefault();
-            }
-            else if (e.type === "mousemove" && arrastrando)
-            {
-                note.style.left = (e.clientX - inicioX) + "px";
-                note.style.top = (e.clientY - inicioY) + "px";
-
-                deleteNote(e);
-            }
-            else if (e.type === "mouseup")
-            {
-                arrastrando = false;
-            }
-        }
-
-        function deleteNote(e)
-        {
-            if (arrastrando)
-            {
-                let ahora = performance.now();
-                let tiempo = ahora - ultimoTiempo;
-                let distancia = Math.abs(e.clientX - ultimaX);
-
-                if (tiempo > 0 && distancia / tiempo > 3)
-                {
-                    arrastrando = false;
-                    note.remove();
-                }
-
-                ultimaX = e.clientX;
-                ultimoTiempo = ahora;
-            }
-        }
-
-    </script>
 </body>
 </html>
 

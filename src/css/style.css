@@ -118,3 +118,80 @@ button
     user-select: none;
     cursor: grab;
 }
+
+#PostIt {
+    position: relative;
+    min-height: 70vh;
+    overflow: hidden;
+}
+
+.nota {
+    position: absolute;
+    width: 200px;
+    box-shadow: 0 3px 8px #0003;
+    touch-action: none;
+    user-select: none;
+    cursor: grab;
+}
+
+.nota p {
+    margin: 0;
+    padding: 10px;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.nota .titulo {
+    background-color: #0001;
+    font-weight: bold;
+}
+
+.nota .texto {
+    min-height: 130px;
+}
+
+.nota [contenteditable="true"] {
+    cursor: text;
+    user-select: text;
+}
+
+.nota.volviendo {
+    transition: left 250ms ease, top 250ms ease;
+}
+
+#PostIt {
+    position: relative;
+    min-height: 70vh;
+}
+
+.nota {
+    position: absolute;
+    width: 180px;
+    min-height: 120px;
+    padding: 12px;
+    box-shadow: 0 3px 8px #0003;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.nota[contenteditable="true"] {
+    cursor: text;
+    user-select: text;
+}
+
+.nota.volver {
+    transition: left 0.25s, top 0.25s;
+}
+
+.nota:empty:not([contenteditable="true"])::before {
+    content: "Doble clic para escribir";
+    color: #6B7280;
+    pointer-events: none;
+}
+
+#Add {
+    z-index: 1;
+}
