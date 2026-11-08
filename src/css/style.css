@@ -159,11 +159,6 @@ button
     transition: left 250ms ease, top 250ms ease;
 }
 
-#PostIt {
-    position: relative;
-    min-height: 70vh;
-}
-
 .nota {
     position: absolute;
     width: 180px;

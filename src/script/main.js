@@ -93,8 +93,6 @@ function empezarArrastre(e) {
         nota && e.isPrimary && e.button === 0 &&
         !arrastre && !borradoPendiente && nota !== notaEditando
     ) {
-        nota.classList.remove("volver");
-
         arrastre = {
             nota,
             puntero: e.pointerId,
@@ -218,8 +216,7 @@ function colocarNota(nota, x, y) {
     nota.style.top = y + "px";
 }
 
-// Aplica la transición CSS y devuelve la nota a la posición anterior al arrastre.
+// Devuelve el post-it a su posición anterior al arrastre.
 function volverAlOrigen(movimiento) {
-    movimiento.nota.classList.add("volver");
     colocarNota(movimiento.nota, movimiento.origenX, movimiento.origenY);
 }
