@@ -8,16 +8,6 @@ A browser-based sticky-note board built with vanilla JavaScript and Cloud Firest
 
 **[Open the live demo](https://profitcoder.github.io/WebbApp_for_Notes/)**
 
-## Screenshots
-
-### The board
-
-![Sticky-note board with notes arranged across the workspace](docs/images/board.png)
-
-### Delete confirmation
-
-![Confirmation dialog displayed after swiping a sticky note](docs/images/delete-confirmation.png)
-
 ## How to use the board
 
 | Action | Mouse or touch interaction | Result |
