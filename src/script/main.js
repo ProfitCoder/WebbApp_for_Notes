@@ -96,11 +96,7 @@
 
     // Guarda la posición inicial de la nota y del puntero al pulsar sobre el post-it.
     function empezarArrastre(e) {
-        /*
-            Se usa para distinguir si hay varias notas
-            cual se ha pulsado, subiendo asi entre clase
-            y clase hasta llegar al padre
-        */
+        //Devuelve el elemento <div> con la clase "nota"
         const nota = e.target.closest(".nota");
 
         const hayNota = nota !== null;
@@ -117,6 +113,7 @@
         {
             let campo = ".texto";
 
+            //Devuelve el elemento <div> con la clase "titulo"
             if (e.target.closest(".titulo")) {
                 campo = ".titulo";
             }
