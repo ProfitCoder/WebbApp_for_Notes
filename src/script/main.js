@@ -231,12 +231,11 @@
     // Devuelve la nota a su posición inicial si el navegador cancela el gesto.
     function cancelarArrastre(e) {
         if (arrastre !== null) {
-            /**
-            Imagina que tienes dos dedos en la pantalla. Con uno estás moviendo el post-it y el otro solo está apoyado.
-            El navegador te avisa de que se ha interrumpido el toque de uno de ellos. Esa línea pregunta «¿Era el dedo que estaba moviendo la nota?»
-            - Sí: la nota vuelve a su sitio.
-            - No: la nota sigue moviéndose con el otro dedo.
-            Para saberlo, compara el número que guardó al empezar a arrastrar (arrastre.puntero) con el número que acaba de recibir al cancelarse el toque (e.pointerId).
+            /*
+                Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
+                haciendo una accion sobre la nota sea el que pueda hacer todo 
+                haciendo asi que si un dedo esta ejecutando uan accion o esta
+                en contacto con la nota el otro no puede mover ni hacer ninguna accion sobre esta
             */
             if (arrastre.puntero === e.pointerId) {
                 volverAlOrigen(arrastre);
