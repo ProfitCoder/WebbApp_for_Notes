@@ -113,7 +113,8 @@
         if (
             hayNota && esPunteroPrincipal && esBotonPrincipal &&
             !hayArrastre && !hayBorradoPendiente && !estoyEditandoEstaNota
-        ) {
+        )
+        {
             let campo = ".texto";
 
             if (e.target.closest(".titulo")) {
@@ -140,8 +141,14 @@
     // Mueve el post-it siguiendo al puntero mientras se arrastra.
     function moverNota(e) {
         if (arrastre !== null) {
-            //e.pointerId es el ID que trae el evento cada vez que se mueve un puntero
-            if (arrastre.puntero === e.pointerId) {
+            /*
+                Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
+                haciendo una accion sobre la nota sea el que pueda hacer todo 
+                haciendo asi que si un dedo esta ejecutando uan accion o esta
+                en contacto con la nota el otro no puede mover ni hacer ninguna accion sobre esta
+            */
+            if (arrastre.puntero === e.pointerId) 
+            {
                 const desplazamientoX = e.clientX - arrastre.inicioX;
                 const desplazamientoY = e.clientY - arrastre.inicioY;
 
@@ -155,7 +162,14 @@
 
     // Al soltar, distingue un doble toque, un arrastre normal y un deslizamiento rápido para borrar.
     async function soltarNota(e) {
-        if (arrastre !== null && arrastre.puntero === e.pointerId) {
+        /*
+                Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
+                haciendo una accion sobre la nota sea el que pueda hacer todo 
+                haciendo asi que si un dedo esta ejecutando uan accion o esta
+                en contacto con la nota el otro no puede mover ni hacer ninguna accion sobre esta
+        */
+        if (arrastre !== null && arrastre.puntero === e.pointerId) 
+        {
             const movimiento = arrastre;
             const nota = movimiento.nota;
             arrastre = null;
@@ -165,17 +179,20 @@
             //Math.abs es el valor absoluto ya que la restar las posiciones pueden dar valores negativos en los ejes
             const distanciaHorizontal = Math.abs(desplazamientoX);
             const distanciaVertical = Math.abs(desplazamientoY);
+            //performance.now devuelve el valor en milisegundos desde que se le pulsa encima
             const ahora = performance.now();
 
-            //Comprueva si se han movido en horizontal y vertical mas de 8 px
+            //Comprueva si se han movido en horizontal y vertical menos o mas de 8 px desde que se pulsa hasta que se suelta
             const esToque = distanciaHorizontal < 8 && distanciaVertical < 8;
 
-            if (esToque) {
+            if (esToque) 
+            {
                 colocarNota(nota, movimiento.origenX, movimiento.origenY);
 
                 let esDobleToque = false;
 
-                if (ultimoToque !== null) {
+                if (ultimoToque !== null) 
+                {
                     //Compara que es la misma nota la que se esta clicando
                     const esLaMismaNota = ultimoToque.nota === nota;
                     //calcula el tiempo entre toques
@@ -185,22 +202,29 @@
                 }
 
                 if (esDobleToque) {
-                    //recuerda qué post-it estás editando. Se usa para evitar que lo arrastres mientras escribes y para guardar sus cambios cuando pulsas fuera
+                    /*
+                        recuerda qué post-it estás editando. Se usa para evitar que lo arrastres 
+                        mientras escribes y para guardar sus cambios cuando pulsas fuera
+                    */
                     notaEditando = nota;
                     nota.querySelector(".titulo").contentEditable = true;
                     nota.querySelector(".texto").contentEditable = true;
                     //hace que el teclado escriba en la parte del post-it que se pulsa
                     nota.querySelector(movimiento.campo).focus();
                     ultimoToque = null;
-                } else {
+                } 
+                else 
+                {
                     ultimoToque = {
-                        //definido al principio de la funcion con movimiento.nota
+                        //definido al principio de la funcion es el arrasstre.nota, para sacar el id de la nota
                         nota: nota,
                         //definida arriba el performance.now
                         tiempo: ahora
                     };
                 }
-            } else {
+            } 
+            else 
+            {
                 ultimoToque = null;
 
                 const nuevaX = movimiento.origenX + desplazamientoX;
@@ -217,13 +241,16 @@
                 const esRapido = velocidad >= 0.7;
 
                 //si el movimiento de la nota debe abrir la confirmación de borrado
-                if (recorreDistanciaSuficiente && esHorizontal && esRapido) {
+                if (recorreDistanciaSuficiente && esHorizontal && esRapido) 
+                {
                     //Guardala nota pendiente de borrar y donde estaba hubicada por si se cancela
                     borradoPendiente = movimiento;
                     // Muestra el panel de confirmación y pone el foco en Cancelar.
                     dialogo.hidden = false;
                     botonCancelarBorrado.focus();
-                } else {
+                } 
+                else 
+                {
                     await updateDoc(doc(coleccion, nota.id), {
                         coordenadaX: nuevaX,
                         coordenadaY: nuevaY
@@ -234,8 +261,10 @@
     }
 
     // Devuelve la nota a su posición inicial si el navegador cancela el gesto.
-    function cancelarArrastre(e) {
-        if (arrastre !== null) {
+    function cancelarArrastre(e) 
+    {
+        if (arrastre !== null) 
+        {
             /*
                 Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
                 haciendo una accion sobre la nota sea el que pueda hacer todo 
@@ -251,9 +280,11 @@
     }
 
     // Cierra la edición y guarda el título y el texto al pulsar fuera de la nota.
-    async function guardarAlPulsarFuera(e) {
+    async function guardarAlPulsarFuera(e) 
+    {
         //si la nota se esta editando o pulsas fuera
-        if (notaEditando && !notaEditando.contains(e.target)) {
+        if (notaEditando && !notaEditando.contains(e.target)) 
+        {
             const nota = notaEditando;
             const titulo = nota.querySelector(".titulo");
             const texto = nota.querySelector(".texto");
@@ -273,8 +304,10 @@
     }
 
     // Borra la nota si se confirma el diálogo o la devuelve a su sitio si se cancela.
-    async function resolverBorrado(e) {
-        if (borradoPendiente) {
+    async function resolverBorrado(e) 
+    {
+        if (borradoPendiente) 
+        {
             const movimiento = borradoPendiente;
             //coje la nota que esta pendiente de borrado, y luego vuelve a poner en null la variable
             const nota = movimiento.nota;
@@ -282,22 +315,27 @@
             dialogo.hidden = true;
 
             //comprueba si se ha pulsado el botón Borrar
-            if (e.currentTarget.value === "borrar") {
+            if (e.currentTarget.value === "borrar") 
+            {
                 await deleteDoc(doc(coleccion, nota.id));
                 nota.remove();
-            } else {
+            } 
+            else 
+            {
                 volverAlOrigen(movimiento);
             }
         }
     }
 
     // Coloca el post-it en las coordenadas X e Y en píxeles.
-    function colocarNota(nota, x, y) {
+    function colocarNota(nota, x, y) 
+    {
         nota.style.left = x + "px";
         nota.style.top = y + "px";
     }
 
     // Devuelve el post-it a su posición anterior al arrastre.
-    function volverAlOrigen(movimiento) {
+    function volverAlOrigen(movimiento) 
+    {
         colocarNota(movimiento.nota, movimiento.origenX, movimiento.origenY);
     }
