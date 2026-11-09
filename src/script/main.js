@@ -25,6 +25,11 @@
     tablero.addEventListener("pointerdown", empezarArrastre);
     tablero.addEventListener("pointermove", moverNota);
     tablero.addEventListener("pointerup", soltarNota);
+    /*
+        el pointercancel se dispara cuando el navegador ve que la accion se ha interrumpido 
+        o bien por poner la nota fuera del tablero o por un cambio de pestaña,
+        pop up o lo que sea
+    */
     tablero.addEventListener("pointercancel", cancelarArrastre);
     document.addEventListener("pointerdown", guardarAlPulsarFuera);
     botonCancelarBorrado.addEventListener("click", resolverBorrado);
