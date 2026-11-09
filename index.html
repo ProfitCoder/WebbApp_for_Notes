@@ -26,14 +26,12 @@
     <main>
         <section id="PostIt"></section>
 
-        <dialog id="confirmarBorrado">
+        <div id="confirmarBorrado" hidden>
             <p>¿Quieres borrar esta nota?</p>
 
-            <form method="dialog">
-                <button value="cancelar" autofocus>Cancelar</button>
-                <button value="borrar">Borrar</button>
-            </form>
-        </dialog>
+            <button type="button" id="cancelarBorrado" value="cancelar">Cancelar</button>
+            <button type="button" id="borrarNota" value="borrar">Borrar</button>
+        </div>
     </main>
 
     <!-- Apartado del footer -->
