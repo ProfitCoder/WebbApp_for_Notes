@@ -190,3 +190,87 @@ button
 #Add {
     z-index: 1;
 }
+
+#panelLogin {
+    box-sizing: border-box;
+    width: min(430px, calc(100% - 32px));
+    margin: clamp(32px, 8vh, 80px) auto 24px;
+    padding: clamp(24px, 5vw, 36px);
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #2563eb;
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgb(15 23 42 / 10%);
+    color: #1f2937;
+    font-family: system-ui, sans-serif;
+}
+
+#panelLogin[hidden] {
+    display: none;
+}
+
+#panelLogin h1 {
+    margin-bottom: 24px;
+    font-size: 1.65rem;
+    text-align: center;
+}
+
+#panelLogin #formlogin {
+    display: grid;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+#panelLogin label {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+#panelLogin input,
+#panelLogin button {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font: inherit;
+}
+
+#panelLogin input {
+    margin-bottom: 8px;
+    background: #f8fafc;
+    color: #1f2937;
+}
+
+#panelLogin button {
+    cursor: pointer;
+    font-weight: 600;
+}
+
+#panelLogin #sesionIni {
+    background: #fff;
+    color: #1f2937;
+}
+
+#panelLogin #sesionIni:hover {
+    background: #f1f5f9;
+}
+
+#panelLogin #IniciarSesionC {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #fff;
+}
+
+#panelLogin #IniciarSesionC:hover {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+}
+
+#panelLogin :is(input, button):focus-visible {
+    outline: 3px solid #60a5fa;
+    outline-offset: 2px;
+}
