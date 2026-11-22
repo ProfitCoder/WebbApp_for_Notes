@@ -2,7 +2,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, doc, getDocs, setDoc, updateDoc, deleteDoc } 
     from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     // 1. Constantes y variables
     const app = initializeApp(firebaseConfig);
@@ -17,6 +17,7 @@
     const botonBorrarNota = document.getElementById("borrarNota");
     const sesionIni = document.getElementById("sesionIni");
     const formLogin = document.getElementById("IniciarSesionC");
+    const botonRegistro = document.getElementById("registrarCorreo");
 
     let arrastre = null;
     let ultimoToque = null;
@@ -26,6 +27,7 @@
     var user = null;
 
     // 2. Eventos
+    botonRegistro.addEventListener("click", registrarCorreo);
     botonAdd.addEventListener("click", insertarNota);
     tablero.addEventListener("pointerdown", empezarArrastre);
     tablero.addEventListener("pointermove", moverNota);
@@ -43,19 +45,59 @@
     formLogin.addEventListener("click", iniciaSesionCorreo);
 
     // 3. Funciones
+    async function guardarUsuario()
+    {
+        await setDoc(doc(db, "Usuarios", user.uid), {
+            correo: user.email,
+            nombre: user.displayName
+        }, { merge: true });
+    }
+
+    function registrarCorreo()
+    {
+        const correo = document.getElementById("correo").value;
+        const password = document.getElementById("password").value;
+
+        createUserWithEmailAndPassword(auth, correo, password)
+        .then((userCredential) => {
+
+            user = userCredential.user;
+
+            guardarUsuario();
+
+            document.getElementById("panelLogin").hidden = true;
+
+            cargarNotas();
+
+            alert("Usuario registrado correctamente");
+
+        })
+        .catch((error) => {
+            console.log(error.code);
+            alert("No se ha podido iniciar sesión: " + error.message);
+        });
+    }
+
     function iniciaSesionCorreo()
     {
-        signInWithEmailAndPassword(auth, "fernandez@gmail.com", "123456")
+        const correo = document.getElementById("correo").value;
+        const password = document.getElementById("password").value;
+
+        signInWithEmailAndPassword(auth, correo, password)
         .then((userCredential) => {
             // Signed in 
             user = userCredential.user;
+
+            guardarUsuario();
+
             document.getElementById("panelLogin").hidden = true;
+            
             cargarNotas();
 
         })
         .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
+            console.log(error.code);
+            alert("No se ha podido iniciar sesión: " + error.message);
         });
     }
 
@@ -68,12 +110,16 @@
             const token = credential.accessToken;
             // The signed-in user info.
             user = result.user;
+
+            guardarUsuario();
+
             // IdP data available using getAdditionalUserInfo(result)
             document.getElementById("panelLogin").hidden = true;
             cargarNotas();
 
 
-        }).catch((error) => {
+        })
+        .catch((error) => {
             // Handle Errors here.
             const errorCode = error.code;
             const errorMessage = error.message;
@@ -190,7 +236,7 @@
         let notaEditandose = (notaEditando !== null);
         let notaPendienteBorrado = (borradoPendiente !== null);
 
-        if (notaNoExiste || botonTocado || hayArrastre || notaEditandose) 
+        if (notaNoExiste || botonTocado || hayArrastre || notaEditandose || notaPendienteBorrado) 
         {
             return;
         }
@@ -394,10 +440,11 @@
     async function guardarAlPulsarFuera(e)
     {
 
-        let noSeEdita = (notaEditando === null);
-        let contieneElCursor = (notaEditando.contains(e.target));
+        if (notaEditando === null) {
+        return;
+        }
 
-        if (noSeEdita || contieneElCursor) {
+        if (notaEditando.contains(e.target)) {
             return;
         }
 
