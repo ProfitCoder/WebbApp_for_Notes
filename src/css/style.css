@@ -274,3 +274,29 @@ button
     outline: 3px solid #60a5fa;
     outline-offset: 2px;
 }
+
+header {
+    position: relative;
+}
+
+#cerrarSesion {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+
+    background-color: #dc2626;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#cerrarSesion:hover {
+    background-color: #b91c1c;
+}
+
+#cerrarSesion[hidden] {
+    display: none;
+}
