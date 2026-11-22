@@ -369,11 +369,12 @@
 
     function cancelarArrastre(e)
     {
-        if (arrastre === null) {
-            return;
-        }
 
-        if (e.pointerId !== puntero) {
+        let notaNoSeMueve = (arrastre === null);
+        //comprueba que el puntero que está moviendo la nota sea el mismo que comenzó a arrastrarla
+        let noMismoPuntero = (e.pointerId !== puntero);
+
+        if (notaNoSeMueve || noMismoPuntero) {
             return;
         }
 
@@ -392,11 +393,11 @@
 
     async function guardarAlPulsarFuera(e)
     {
-        if (notaEditando === null) {
-            return;
-        }
 
-        if (notaEditando.contains(e.target)) {
+        let noSeEdita = (notaEditando === null);
+        let contieneElCursor = (notaEditando.contains(e.target));
+
+        if (noSeEdita || contieneElCursor) {
             return;
         }
 
@@ -425,7 +426,11 @@
 
     async function resolverBorrado(e)
     {
-        if (borradoPendiente === null) {
+
+        let noHayBorradoPendiente = (borradoPendiente === null);
+
+        if (noHayBorradoPendiente) 
+        {
             return;
         }
 
@@ -433,7 +438,9 @@
 
         // Si pulsamos el botón borrar
 
-        if (e.currentTarget.value === "borrar")
+        let dondeSePulsaBorra = (e.currentTarget.value === "borrar");
+
+        if (dondeSePulsaBorra)
         {
             await deleteDoc(doc(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas", nota.id));
 
