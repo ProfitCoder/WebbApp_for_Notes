@@ -223,14 +223,17 @@ async function insertarNota()
 
 // Mostrar una nota en la página
 
+
 function mostrarNota(id, datos)
 {
-    // Comprueba si existe la nota
     if (document.getElementById(id) === null)
     {
         const nota = document.createElement("div");
         const titulo = document.createElement("p");
         const texto = document.createElement("p");
+
+        // Selector de color
+        const color = document.createElement("input");
 
         nota.id = id;
         nota.className = "nota";
@@ -246,13 +249,25 @@ function mostrarNota(id, datos)
         nota.style.left = datos.coordenadaX + "px";
         nota.style.top = datos.coordenadaY + "px";
 
-        // Con el DOM creamos la nota
+        // Configurar selector de colores
+
+        color.type = "color";
+        color.className = "colorNota";
+        color.value = datos.color;
+
+        // Detectar cuando cambiamos el color
+        color.addEventListener("change", cambiarColor);
+
+        // Crear los elementos de la nota
+
         nota.appendChild(titulo);
         nota.appendChild(texto);
+        nota.appendChild(color);
 
         tablero.appendChild(nota);
     }
 }
+
 
 
 // Empezar a mover una nota
@@ -270,8 +285,9 @@ function empezarArrastre(e)
     let hayArrastre = (arrastre !== null);
     let notaEditandose = (notaEditando !== null);
     let notaPendienteBorrado = (borradoPendiente !== null);
+    let seleccionSinMoverNota = (e.target.className === "colorNota");
 
-    if (notaNoExiste || botonTocado || hayArrastre || notaEditandose || notaPendienteBorrado)
+    if (notaNoExiste || botonTocado || hayArrastre || notaEditandose || notaPendienteBorrado || seleccionSinMoverNota)
     {
         return;
     }
@@ -539,4 +555,25 @@ async function resolverBorrado(e)
     borradoPendiente = null;
 
     dialogo.hidden = true;
+}
+
+async function cambiarColor(e)
+{
+    // Obtener el selector de color
+
+    const color = e.target;
+
+    // Obtener la nota a la que pertenece
+
+    const nota = color.parentElement;
+
+    // Cambiar el color de la nota
+
+    nota.style.backgroundColor = color.value;
+
+    // Guardar el color en Firebase
+
+    await updateDoc(doc(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas", nota.id), {
+        color: color.value
+    });
 }
