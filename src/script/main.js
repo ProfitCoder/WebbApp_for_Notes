@@ -63,7 +63,9 @@
 
             user = userCredential.user;
 
-            guardarUsuario();
+            guardarUsuario().catch((error) => {
+                console.log("Error al guardar usuario: " + error.message);
+            });
 
             document.getElementById("panelLogin").hidden = true;
 
@@ -74,7 +76,7 @@
         })
         .catch((error) => {
             console.log(error.code);
-            alert("No se ha podido iniciar sesión: " + error.message);
+            alert("No se ha podido registrar: " + error.message);
         });
     }
 
