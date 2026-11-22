@@ -300,3 +300,32 @@ header {
 #cerrarSesion[hidden] {
     display: none;
 }
+
+
+/* Selector de colores de las notas */
+
+.colorNota {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+
+    width: 30px;
+    height: 30px;
+
+    padding: 0;
+    border: none;
+    border-radius: 5px;
+
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.colorNota:hover {
+    transform: scale(1.1);
+}
+
+/* Evitar que el texto tape el selector */
+
+.nota {
+    padding-bottom: 45px;
+}
