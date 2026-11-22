@@ -85,19 +85,44 @@
         });
     }
 
+    // Variables para el movimiento de las notas
 
-    // Lee las notas de Firestore y las muestra en el tablero.
-    async function cargarNotas() {
-        const resultado = await getDocs(coleccion,"NOTAS_USUARIO_"+user.uid);
+    let inicioX = 0;
+    let inicioY = 0;
+    let posicionX = 0;
+    let posicionY = 0;
+    let tiempoInicio = 0;
+    let tiempoUltimoToque = 0;
+    let puntero = null;
+    let campoEditar = ".texto";
 
-        for (const documento of resultado.docs) {
+
+    // Cargar las notas de Firebase
+
+    async function cargarNotas()
+    {
+        const resultado = await getDocs(collection(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas"));
+
+        tablero.innerHTML = "";
+
+        for (const documento of resultado.docs)
+        {
             mostrarNota(documento.id, documento.data());
         }
     }
 
-    // Guarda una nota nueva en Firestore y la añade al tablero.
-    async function insertarNota() {
-        const referencia = doc(coleccion, "NOTAS_USUARIO_"+user.uid);
+
+    // Crear una nota nueva
+
+    async function insertarNota()
+    {
+        if (user === null)
+        {
+            alert("Primero debes iniciar sesión");
+            return;
+        }
+
+        const referencia = doc(collection(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas"));
 
         const datos = {
             id: referencia.id,
@@ -106,280 +131,323 @@
             color: "#FEF3C7",
             coordenadaX: 20,
             coordenadaY: 20,
-            //el toISOString convierte el objeto date a cadena de texto
             fechaCreacion: new Date().toISOString()
         };
 
         await setDoc(referencia, datos);
+
         mostrarNota(referencia.id, datos);
     }
 
-    // Crea el post-it con su título, texto, color y posición si aún no está en el tablero.
-    function mostrarNota(id, datos) {
-        if (!document.getElementById(id)) {
+
+    // Mostrar una nota en la página
+
+    function mostrarNota(id, datos)
+    {
+
+        //Comprueba si existe la nota
+        if (document.getElementById(id) === null)
+        {
             const nota = document.createElement("div");
             const titulo = document.createElement("p");
             const texto = document.createElement("p");
 
             nota.id = id;
             nota.className = "nota";
+
             titulo.className = "titulo";
             texto.className = "texto";
 
-            titulo.textContent = datos.titulo ?? "Nota";
-            texto.textContent = datos.texto ?? "";
-            nota.style.backgroundColor = datos.color || "#FEF3C7";
+            titulo.textContent = datos.titulo;
+            texto.textContent = datos.texto;
 
-            colocarNota(
-                nota,
-                Number(datos.coordenadaX) || 0,
-                Number(datos.coordenadaY) || 0
-            );
+            nota.style.backgroundColor = datos.color;
 
-            nota.append(titulo, texto);
+            nota.style.left = datos.coordenadaX + "px";
+            nota.style.top = datos.coordenadaY + "px";
+
+            //Con el DOM creamos la nota
+            nota.appendChild(titulo);
+            nota.appendChild(texto);
+
             tablero.appendChild(nota);
         }
     }
 
-    // Guarda la posición inicial de la nota y del puntero al pulsar sobre el post-it.
-    function empezarArrastre(e) {
-        //Devuelve el elemento <div> con la clase "nota"
+
+    // Empezar a mover una nota
+
+    function empezarArrastre(e)
+    {
         const nota = e.target.closest(".nota");
 
-        const hayNota = nota !== null;
-        const esPunteroPrincipal = e.isPrimary;
-        const esBotonPrincipal = e.button === 0;
-        const hayArrastre = arrastre !== null;
-        const hayBorradoPendiente = borradoPendiente !== null;
-        const estoyEditandoEstaNota = nota === notaEditando;
+        //Comprobaciones
+        let notaNoExiste = (nota === null);
+        //Para comprobar cual es el boton pulsado, (izq 0, rued 1 y dere 2)
+        //Primary por si hay varios dedos en la pantalla (solo movil)
+        let botonTocado = (e.button !== 0 || !e.isPrimary);
+        let hayArrastre = (arrastre !== null);
+        let notaEditandose = (notaEditando !== null);
+        let notaPendienteBorrado = (borradoPendiente !== null);
 
-        if (
-            hayNota && esPunteroPrincipal && esBotonPrincipal &&
-            !hayArrastre && !hayBorradoPendiente && !estoyEditandoEstaNota
-        )
+        if (notaNoExiste || botonTocado || hayArrastre || notaEditandose) 
         {
-            let campo = ".texto";
-
-            //Devuelve el elemento <div> con la clase "titulo"
-            if (e.target.closest(".titulo")) {
-                campo = ".titulo";
-            }
-
-            arrastre = {
-                nota: nota,
-                puntero: e.pointerId,
-                inicioX: e.clientX,
-                inicioY: e.clientY,
-                origenX: nota.offsetLeft,
-                origenY: nota.offsetTop,
-                //performance.now devuelve el valor en milisegundos desde que se le pulsa encima
-                tiempo: performance.now(),
-                campo: campo
-            };
-
-            //Por si se sale del tablero la nota, que siga detectando los eventos
-            tablero.setPointerCapture(e.pointerId);
+            return;
         }
-    }
 
-    // Mueve el post-it siguiendo al puntero mientras se arrastra.
-    function moverNota(e) {
-        if (arrastre !== null) {
-            /*
-                Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
-                haciendo una accion sobre la nota sea el que pueda hacer todo 
-                haciendo asi que si un dedo esta ejecutando uan accion o esta
-                en contacto con la nota el otro no puede mover ni hacer ninguna accion sobre esta
-            */
-            if (arrastre.puntero === e.pointerId) 
-            {
-                const desplazamientoX = e.clientX - arrastre.inicioX;
-                const desplazamientoY = e.clientY - arrastre.inicioY;
+        // Guardamos la nota que estamos moviendo
 
-                const nuevaX = arrastre.origenX + desplazamientoX;
-                const nuevaY = arrastre.origenY + desplazamientoY;
+        arrastre = nota;
 
-                colocarNota(arrastre.nota, nuevaX, nuevaY);
-            }
+        puntero = e.pointerId;
+
+        // Posición donde hemos pulsado
+
+        inicioX = e.clientX;
+        inicioY = e.clientY;
+
+        // Posición inicial de la nota
+
+        posicionX = nota.offsetLeft;
+        posicionY = nota.offsetTop;
+
+        // Momento en el que pulsamos
+
+        tiempoInicio = Date.now();
+
+        // Comprobar si pulsamos sobre el título
+
+        campoEditar = ".texto";
+
+        if (e.target.closest(".titulo"))
+        {
+            campoEditar = ".titulo";
         }
-    }
 
-    // Al soltar, distingue un doble toque, un arrastre normal y un deslizamiento rápido para borrar.
-    async function soltarNota(e) {
         /*
-                Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
-                haciendo una accion sobre la nota sea el que pueda hacer todo 
-                haciendo asi que si un dedo esta ejecutando uan accion o esta
-                en contacto con la nota el otro no puede mover ni hacer ninguna accion sobre esta
+            Esto se hace para que el tablero siga detectando el movimiento del ratón o del dedo, 
+            aunque el puntero se salga de sus límites mientras arrastras una nota 
         */
-        if (arrastre !== null && arrastre.puntero === e.pointerId) 
-        {
-            const movimiento = arrastre;
-            const nota = movimiento.nota;
-            arrastre = null;
-
-            const desplazamientoX = e.clientX - movimiento.inicioX;
-            const desplazamientoY = e.clientY - movimiento.inicioY;
-            //Math.abs es el valor absoluto ya que la restar las posiciones pueden dar valores negativos en los ejes
-            const distanciaHorizontal = Math.abs(desplazamientoX);
-            const distanciaVertical = Math.abs(desplazamientoY);
-            //performance.now devuelve el valor en milisegundos desde que se le pulsa encima
-            const ahora = performance.now();
-
-            //Comprueva si se han movido en horizontal y vertical menos o mas de 8 px desde que se pulsa hasta que se suelta
-            const esToque = distanciaHorizontal < 8 && distanciaVertical < 8;
-
-            if (esToque) 
-            {
-                colocarNota(nota, movimiento.origenX, movimiento.origenY);
-
-                let esDobleToque = false;
-
-                if (ultimoToque !== null) 
-                {
-                    //Compara que es la misma nota la que se esta clicando
-                    const esLaMismaNota = ultimoToque.nota === nota;
-                    //calcula el tiempo entre toques
-                    const tiempoEntreToques = ahora - ultimoToque.tiempo;
-
-                    esDobleToque = esLaMismaNota && (tiempoEntreToques < 350);
-                }
-
-                if (esDobleToque) {
-                    /*
-                        recuerda qué post-it estás editando. Se usa para evitar que lo arrastres 
-                        mientras escribes y para guardar sus cambios cuando pulsas fuera
-                    */
-                    notaEditando = nota;
-                    nota.querySelector(".titulo").contentEditable = true;
-                    nota.querySelector(".texto").contentEditable = true;
-                    //hace que el teclado escriba en la parte del post-it que se pulsa
-                    nota.querySelector(movimiento.campo).focus();
-                    ultimoToque = null;
-                } 
-                else 
-                {
-                    ultimoToque = {
-                        //definido al principio de la funcion es el arrasstre.nota, para sacar el id de la nota
-                        nota: nota,
-                        //definida arriba el performance.now
-                        tiempo: ahora
-                    };
-                }
-            } 
-            else 
-            {
-                ultimoToque = null;
-
-                const nuevaX = movimiento.origenX + desplazamientoX;
-                const nuevaY = movimiento.origenY + desplazamientoY;
-
-                colocarNota(nota, nuevaX, nuevaY);
-
-                //cuántos milisegundos pasaron desde que pulsaste la nota hasta que la soltaste
-                const duracion = Math.max(1, ahora - movimiento.tiempo);
-                const velocidad = distanciaHorizontal / duracion;
-
-                const recorreDistanciaSuficiente = distanciaHorizontal >= 100;
-                const esHorizontal = distanciaHorizontal > 2 * distanciaVertical;
-                const esRapido = velocidad >= 0.7;
-
-                //si el movimiento de la nota debe abrir la confirmación de borrado
-                if (recorreDistanciaSuficiente && esHorizontal && esRapido) 
-                {
-                    //Guardala nota pendiente de borrar y donde estaba hubicada por si se cancela
-                    borradoPendiente = movimiento;
-                    // Muestra el panel de confirmación y pone el foco en Cancelar.
-                    dialogo.hidden = false;
-                    botonCancelarBorrado.focus();
-                } 
-                else 
-                {
-                    await updateDoc(doc(coleccion, nota.id), {
-                        coordenadaX: nuevaX,
-                        coordenadaY: nuevaY
-                    });
-                }
-            }
-        }
+            tablero.setPointerCapture(e.pointerId);
     }
 
-    // Devuelve la nota a su posición inicial si el navegador cancela el gesto.
-    function cancelarArrastre(e) 
+
+    // Mover la nota
+
+    function moverNota(e)
     {
-        if (arrastre !== null) 
+
+        let notaNoSeMueve = (arrastre === null);
+        //comprueba que el puntero que está moviendo la nota sea el mismo que comenzó a arrastrarla
+        let noMismoPuntero = (e.pointerId !== puntero); 
+
+        if (notaNoSeMueve || noMismoPuntero) 
         {
-            /*
-                Sirve para diferenciar, si hay dos dedos tocando la pantalla, que el que esta 
-                haciendo una accion sobre la nota sea el que pueda hacer todo 
-                haciendo asi que si un dedo esta ejecutando uan accion o esta
-                en contacto con la nota el otro no puede mover ni hacer ninguna accion sobre esta
-            */
-            if (arrastre.puntero === e.pointerId) {
-                volverAlOrigen(arrastre);
-                arrastre = null;
+            return;
+        }
+
+        // Calcular cuánto se ha movido el ratón
+
+        const movimientoX = e.clientX - inicioX;
+        const movimientoY = e.clientY - inicioY;
+
+        // Calcular la nueva posición
+
+        const nuevaX = posicionX + movimientoX;
+        const nuevaY = posicionY + movimientoY;
+
+        // Mover la nota en pantalla
+
+        arrastre.style.left = nuevaX + "px";
+        arrastre.style.top = nuevaY + "px";
+    }
+
+
+    // Soltar la nota
+
+    async function soltarNota(e)
+    {
+
+        let notaNoSeMueve = (arrastre === null);
+        //comprueba que el puntero que está moviendo la nota sea el mismo que comenzó a arrastrarla
+        let noMismoPuntero = (e.pointerId !== puntero);
+
+        if (notaNoSeMueve || noMismoPuntero) 
+        {
+            return;
+        }
+
+        const nota = arrastre;
+
+        arrastre = null;
+        puntero = null;
+
+        // Calcular el movimiento realizado
+
+        const movimientoX = e.clientX - inicioX;
+        const movimientoY = e.clientY - inicioY;
+
+        const distanciaX = Math.abs(movimientoX);
+        const distanciaY = Math.abs(movimientoY);
+
+        const ahora = Date.now();
+
+        // Comprobar si solamente hemos pulsado la nota
+
+        if (distanciaX < 8 && distanciaY < 8)
+        {
+            nota.style.left = posicionX + "px";
+            nota.style.top = posicionY + "px";
+
+            // Comprobar si hemos pulsado dos veces
+
+            let ultimoToqueMismaNota = (ultimoToque === nota);
+            let menosdeMili = (ahora - tiempoUltimoToque < 350);
+
+            if (ultimoToqueMismaNota && menosdeMili)
+            {
+                notaEditando = nota;
+
+                nota.querySelector(".titulo").contentEditable = true;
+                nota.querySelector(".texto").contentEditable = true;
+
+                nota.querySelector(campoEditar).focus();
+
                 ultimoToque = null;
             }
-        }
-    }
-
-    // Cierra la edición y guarda el título y el texto al pulsar fuera de la nota.
-    async function guardarAlPulsarFuera(e) 
-    {
-        //si la nota se esta editando o pulsas fuera
-        if (notaEditando && !notaEditando.contains(e.target)) 
-        {
-            const nota = notaEditando;
-            const titulo = nota.querySelector(".titulo");
-            const texto = nota.querySelector(".texto");
-
-            const datos = {
-                //innerText lee lo que tiene cada campo
-                titulo: titulo.innerText,
-                texto: texto.innerText
-            };
-
-            notaEditando = null;
-            titulo.contentEditable = false;
-            texto.contentEditable = false;
-
-            await updateDoc(doc(coleccion, nota.id), datos);
-        }
-    }
-
-    // Borra la nota si se confirma el diálogo o la devuelve a su sitio si se cancela.
-    async function resolverBorrado(e) 
-    {
-        if (borradoPendiente) 
-        {
-            const movimiento = borradoPendiente;
-            //coje la nota que esta pendiente de borrado, y luego vuelve a poner en null la variable
-            const nota = movimiento.nota;
-            borradoPendiente = null;
-            dialogo.hidden = true;
-
-            //comprueba si se ha pulsado el botón Borrar
-            if (e.currentTarget.value === "borrar") 
+            else
             {
-                await deleteDoc(doc(coleccion, nota.id));
-                nota.remove();
-            } 
-            else 
-            {
-                volverAlOrigen(movimiento);
+                ultimoToque = nota;
+                tiempoUltimoToque = ahora;
             }
+
+            return;
+        }
+
+        ultimoToque = null;
+
+        // Calcular dónde hemos soltado la nota
+
+        const nuevaX = posicionX + movimientoX;
+        const nuevaY = posicionY + movimientoY;
+
+        nota.style.left = nuevaX + "px";
+        nota.style.top = nuevaY + "px";
+
+        // Comprobar si hemos deslizado rápidamente
+
+        let tiempo = ahora - tiempoInicio;
+
+        if (tiempo < 1)
+        {
+            tiempo = 1;
+        }
+
+        const velocidad = distanciaX / tiempo;
+
+        if (distanciaX >= 100 && distanciaX > distanciaY * 2 && velocidad >= 0.7)
+        {
+            borradoPendiente = nota;
+
+            dialogo.hidden = false;
+
+            botonCancelarBorrado.focus();
+        }
+        else
+        {
+            // Guardar la nueva posición en Firebase
+
+            await updateDoc(doc(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas", nota.id), {
+                coordenadaX: nuevaX,
+                coordenadaY: nuevaY
+            });
         }
     }
 
-    // Coloca el post-it en las coordenadas X e Y en píxeles.
-    function colocarNota(nota, x, y) 
+
+    // Cancelar el movimiento
+
+    function cancelarArrastre(e)
     {
-        nota.style.left = x + "px";
-        nota.style.top = y + "px";
+        if (arrastre === null) {
+            return;
+        }
+
+        if (e.pointerId !== puntero) {
+            return;
+        }
+
+        // Devolver la nota a su posición anterior
+
+        arrastre.style.left = posicionX + "px";
+        arrastre.style.top = posicionY + "px";
+
+        arrastre = null;
+        puntero = null;
+        ultimoToque = null;
     }
 
-    // Devuelve el post-it a su posición anterior al arrastre.
-    function volverAlOrigen(movimiento) 
+
+    // Guardar una nota al pulsar fuera
+
+    async function guardarAlPulsarFuera(e)
     {
-        colocarNota(movimiento.nota, movimiento.origenX, movimiento.origenY);
+        if (notaEditando === null) {
+            return;
+        }
+
+        if (notaEditando.contains(e.target)) {
+            return;
+        }
+
+        const nota = notaEditando;
+
+        const titulo = nota.querySelector(".titulo");
+        const texto = nota.querySelector(".texto");
+
+        // Dejar de editar
+
+        titulo.contentEditable = false;
+        texto.contentEditable = false;
+
+        notaEditando = null;
+
+        // Guardar los cambios en Firebase
+
+        await updateDoc(doc(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas", nota.id), {
+            titulo: titulo.innerText,
+            texto: texto.innerText
+        });
+    }
+
+
+    // Confirmar o cancelar el borrado
+
+    async function resolverBorrado(e)
+    {
+        if (borradoPendiente === null) {
+            return;
+        }
+
+        const nota = borradoPendiente;
+
+        // Si pulsamos el botón borrar
+
+        if (e.currentTarget.value === "borrar")
+        {
+            await deleteDoc(doc(db, "ColeccionPostIt", "NOTAS_USUARIO_" + user.uid, "Notas", nota.id));
+
+            nota.remove();
+        }
+        else
+        {
+            // Si cancelamos, devolver la nota a su sitio
+
+            nota.style.left = posicionX + "px";
+            nota.style.top = posicionY + "px";
+        }
+
+        borradoPendiente = null;
+
+        dialogo.hidden = true;
     }
