@@ -447,9 +447,8 @@ async function soltarNota(e)
     {
         borradoPendiente = nota;
 
+        //Muestra ventana de confirmacion del borrado
         dialogo.hidden = false;
-
-        botonCancelarBorrado.focus();
     }
     else
     {
